@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "infixToPostfix.h"
 
 struct node {
   int isFinal;
@@ -150,6 +151,10 @@ int main()
 
   struct List* c_closure = closure(c);
   printf("%c\n", c_closure->sf_pair[0]->epsilon_transition1->symbol_transition->symbol);
+
+  char* postfixExp = getPostfixExp("(a|b)*c");
+  // printf(  "Captured strlen: %lu\n", strlen( getPostfixExp("(a|b)*c") )  );
+  printf("Captured: %s\n", postfixExp);
 
   return 0;
 }

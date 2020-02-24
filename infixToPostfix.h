@@ -4,10 +4,12 @@
 int getPrecedence(char operator) {
   if(operator == '|')
     return 0;
-  if(operator == '.')
+  else if(operator == '.')
     return 1;
-  if(operator == '*')
+  else if(operator == '*')
     return 2;
+  else
+    return -1;
 }
 
 char* getPostfixExp(char* exp) {
@@ -21,8 +23,6 @@ char* getPostfixExp(char* exp) {
       expression = (char *)realloc(expression, sizeof(char)*strlen(expression)+1);
       strncat(expression, &exp[i], 1);
     }
-
-    // strncat(expression, &exp[i], 1);
 
     if( exp[i] == '(' || exp[i] == '|' ) {
         continue;
@@ -38,6 +38,7 @@ char* getPostfixExp(char* exp) {
         strncat(expression, &tok, 1);
     }
   }
+  printf("After adding . : %s\n", expression);
 
   /*  now expression has '.' in place of all concatination  */
   char stack[200];
@@ -84,6 +85,7 @@ char* getPostfixExp(char* exp) {
     }
   }
 
-
-  return queue;
+  char* postfix = (char *)malloc(sizeof(char) * --q);
+  strcpy(postfix, queue);
+  return postfix;
 }

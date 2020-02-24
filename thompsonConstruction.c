@@ -34,6 +34,9 @@ void addSymbolTransition(struct node* from, struct node* to, char symbol) {
     from->symbol_transition = to;
     to->symbol = symbol;
   }
+  else {
+    perror("Cannot add more than one Symbol Transitions!");
+  }
 }
 
 void addEpsilonTransition(struct node* from, struct node* to) {
@@ -81,7 +84,8 @@ struct List* createFromEpsilon() {
 struct List* concat(struct List* nfa1, struct List* nfa2) {
   addEpsilonTransition(nfa1->sf_pair[1], nfa2->sf_pair[0]);
   nfa1->sf_pair[1]->isFinal = 0;
-  // printf("%d", nfa1[1]->node->isFinal);
+
+  printf("IN CONCAT: %c\n",nfa1->sf_pair[0]->epsilon_transition1->symbol_transition->epsilon_transition1->epsilon_transition1->symbol_transition->symbol);
 
   struct List* start_end_pair = malloc(sizeof(struct List));
   start_end_pair->sf_pair = malloc(2 * sizeof(struct node*));
@@ -118,6 +122,7 @@ struct List* closure(struct List* nfa) {
   struct node* start = createNode(0);
   struct node* end = createNode(1);
 
+  printf("IN CLOSURE: %c\n",nfa->sf_pair[0]->symbol_transition->symbol);
   addEpsilonTransition( start, nfa->sf_pair[0] );
   addEpsilonTransition( start, end );
 
@@ -137,24 +142,41 @@ struct List* closure(struct List* nfa) {
 
 int main()
 {
-  struct List* a = createFromSymbol('a');
-  struct List* b = createFromSymbol('b');
-  struct List* c = createFromSymbol('c');
-  printf("%c\n", a->sf_pair[0]->symbol_transition->symbol);
-  printf("%c\n", b->sf_pair[0]->symbol_transition->symbol);
-
-  struct List* ab = concat(a, b);
-  printf("%c\n", ab->sf_pair[0]->symbol_transition->epsilon_transition1->symbol_transition->symbol);
-
-  struct List* aORb = unison(a, b);
-  printf("%c\n", aORb->sf_pair[0]->epsilon_transition1->symbol_transition->symbol);
-
-  struct List* c_closure = closure(c);
-  printf("%c\n", c_closure->sf_pair[0]->epsilon_transition1->symbol_transition->symbol);
-
-  char* postfixExp = getPostfixExp("(a|b)*c");
+  char* postfixExp = getPostfixExp("a|b*c");
   // printf(  "Captured strlen: %lu\n", strlen( getPostfixExp("(a|b)*c") )  );
   printf("Captured: %s\n", postfixExp);
+
+
+  //read the postfixExp
+  //if its a symbol, createWithSymbol and push graph into stack
+  //if its '*' pop the top item in stack and push the return from closure(top item in stack)
+  //if its '|' pop the top two item in stack the push the return from unison(top two item in stack)
+
+  int s = 0;
+  struct List* stack[100];
+  for(int i = 0; i < strlen(postfixExp); i++) {
+    printf("postfixExp[%d]: %c", i, postfixExp[i]);
+    if(postfixExp[i] == '*') {
+      struct List* nfa = stack[--s];
+      stack[s++] = closure(nfa);
+    }
+    else if(postfixExp[i] == '.') {
+      struct List* nfa1 = stack[--s];
+      struct List* nfa2 = stack[--s];
+      stack[s++] = concat(nfa2, nfa1);
+    }
+    else if(postfixExp[i] == '|') {
+      struct List* nfa1 = stack[--s];
+      struct List* nfa2 = stack[--s];
+      stack[s++] = unison(nfa2, nfa1);
+    }
+    else {
+      stack[s++] = createFromSymbol( postfixExp[i] );
+    }
+  }
+
+  // printf("s: %d\n", --s);
+  printf("IN ENDDD: %c\n",stack[0]->sf_pair[0]->epsilon_transition2->epsilon_transition1->symbol_transition->symbol);
 
   return 0;
 }
